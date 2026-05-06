@@ -2,18 +2,392 @@
 <html lang="de">
   <head>
     <meta charset="utf-8">
-    <title>Hochschule – Stack Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Neon Snake</title>
     <style>
-      body { font-family: system-ui, sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; background: #0f172a; color: #e2e8f0; }
-      .card { padding: 2rem 3rem; border: 1px solid #334155; border-radius: 12px; background: #1e293b; text-align: center; }
-      h1 { margin: 0 0 .5rem; }
-      code { background: #334155; padding: .15rem .4rem; border-radius: 4px; }
+      :root {
+        --bg: #05070d;
+        --grid: #0d1424;
+        --snake: #5ef38c;
+        --snake-glow: #5ef38caa;
+        --food: #ff3d8a;
+        --food-glow: #ff3d8a99;
+        --text: #e2e8f0;
+        --muted: #64748b;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0; padding: 0; height: 100%;
+        background: radial-gradient(ellipse at center, #0a1024 0%, var(--bg) 70%);
+        color: var(--text);
+        font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+        overflow: hidden;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .stage {
+        position: fixed; inset: 0;
+        display: grid; place-items: center;
+      }
+      .hud {
+        position: fixed; top: 0; left: 0; right: 0;
+        padding: 14px 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .hud .score { color: var(--snake); text-shadow: 0 0 12px var(--snake-glow); }
+      .hud .best { color: var(--food); text-shadow: 0 0 12px var(--food-glow); }
+      .hud .title { color: var(--muted); font-size: 12px; }
+      canvas {
+        display: block;
+        max-width: 100vw; max-height: 100vh;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 0 30px #1e293b);
+      }
+      .overlay {
+        position: fixed; inset: 0;
+        display: grid; place-items: center;
+        background: rgba(5, 7, 13, 0.78);
+        backdrop-filter: blur(6px);
+        z-index: 3;
+        text-align: center;
+        transition: opacity .25s ease;
+      }
+      .overlay.hidden { opacity: 0; pointer-events: none; }
+      .overlay h1 {
+        margin: 0 0 .4em;
+        font-size: clamp(2.2rem, 6vw, 3.6rem);
+        letter-spacing: 0.15em;
+        color: var(--snake);
+        text-shadow: 0 0 24px var(--snake-glow);
+      }
+      .overlay h1.dead { color: var(--food); text-shadow: 0 0 24px var(--food-glow); }
+      .overlay p { margin: .35em 0; color: var(--muted); }
+      .overlay .keys { color: var(--text); margin-top: 1.4em; font-size: .9em; }
+      .overlay .keys kbd {
+        display: inline-block;
+        padding: .2em .55em; margin: 0 .15em;
+        border: 1px solid #334155; border-bottom-width: 2px;
+        border-radius: 4px; background: #0f172a;
+        font-family: inherit; font-size: .85em;
+      }
+      .overlay .final { color: var(--snake); font-size: 1.2em; margin-top: 1em; }
+      .overlay .final.record { color: var(--food); }
+      .credit { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: var(--muted); z-index: 2; }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>Es läuft.</h1>
-      <p>nginx auf <code>:8090</code> · whoami auf <code>:8091</code></p>
+    <div class="hud">
+      <span class="score">Score <strong id="score">0</strong></span>
+      <span class="title">Neon Snake</span>
+      <span class="best">Best <strong id="best">0</strong></span>
     </div>
+
+    <div class="stage">
+      <canvas id="game" width="600" height="600" aria-label="Neon Snake game canvas"></canvas>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div>
+        <h1 id="overlay-title">Neon Snake</h1>
+        <p id="overlay-sub">Iss die pinken Punkte. Lauf nicht in dich selbst.</p>
+        <p class="keys">
+          <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> oder <kbd>WASD</kbd> · <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset
+        </p>
+        <p id="final" class="final" style="display:none"></p>
+        <p style="margin-top: 2em; font-size: .85em">Drücke eine beliebige Taste oder tippe…</p>
+      </div>
+    </div>
+
+    <span class="credit">served by nginx · :8090</span>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const bestEl = document.getElementById('best');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlaySub = document.getElementById('overlay-sub');
+        const finalEl = document.getElementById('final');
+
+        const COLS = 24, ROWS = 24;
+        const SIZE = canvas.width / COLS;
+
+        const STATE = { MENU: 0, PLAYING: 1, PAUSED: 2, DEAD: 3 };
+        let state = STATE.MENU;
+
+        let snake, dir, nextDir, food, score, best, tickMs, lastTick, particles;
+
+        best = parseInt(localStorage.getItem('neon-snake-best') || '0', 10);
+        bestEl.textContent = best;
+
+        // --- audio (WebAudio, synthesized) -------------------------------
+        let audioCtx = null;
+        function audio() {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          return audioCtx;
+        }
+        function beep(freq, dur = 0.08, type = 'square', gain = 0.06) {
+          try {
+            const a = audio();
+            const o = a.createOscillator();
+            const g = a.createGain();
+            o.type = type;
+            o.frequency.value = freq;
+            g.gain.value = gain;
+            g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
+            o.connect(g).connect(a.destination);
+            o.start();
+            o.stop(a.currentTime + dur);
+          } catch (e) { /* ignore */ }
+        }
+
+        // --- helpers -----------------------------------------------------
+        function reset() {
+          snake = [{ x: 12, y: 12 }, { x: 11, y: 12 }, { x: 10, y: 12 }];
+          dir = { x: 1, y: 0 };
+          nextDir = { x: 1, y: 0 };
+          score = 0;
+          tickMs = 110;
+          lastTick = 0;
+          particles = [];
+          spawnFood();
+          updateScore();
+        }
+
+        function spawnFood() {
+          while (true) {
+            const f = { x: (Math.random() * COLS) | 0, y: (Math.random() * ROWS) | 0 };
+            if (!snake.some(s => s.x === f.x && s.y === f.y)) {
+              food = f;
+              return;
+            }
+          }
+        }
+
+        function updateScore() {
+          scoreEl.textContent = score;
+          if (score > best) {
+            best = score;
+            bestEl.textContent = best;
+            localStorage.setItem('neon-snake-best', String(best));
+          }
+        }
+
+        function burst(cx, cy, color, count = 22) {
+          for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const sp = 1 + Math.random() * 3;
+            particles.push({
+              x: cx, y: cy,
+              vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+              life: 1, color,
+            });
+          }
+        }
+
+        // --- game loop ---------------------------------------------------
+        function tick() {
+          dir = nextDir;
+          const head = { x: (snake[0].x + dir.x + COLS) % COLS, y: (snake[0].y + dir.y + ROWS) % ROWS };
+
+          if (snake.some(s => s.x === head.x && s.y === head.y)) {
+            die();
+            return;
+          }
+
+          snake.unshift(head);
+          if (head.x === food.x && head.y === food.y) {
+            score++;
+            updateScore();
+            burst(food.x * SIZE + SIZE / 2, food.y * SIZE + SIZE / 2, '#ff3d8a');
+            beep(660 + Math.min(score, 30) * 12, 0.07, 'square', 0.08);
+            spawnFood();
+            tickMs = Math.max(55, tickMs * 0.97);
+          } else {
+            snake.pop();
+          }
+        }
+
+        function die() {
+          state = STATE.DEAD;
+          beep(180, 0.2, 'sawtooth', 0.1);
+          setTimeout(() => beep(110, 0.3, 'sawtooth', 0.1), 90);
+          const head = snake[0];
+          burst(head.x * SIZE + SIZE / 2, head.y * SIZE + SIZE / 2, '#ff3d8a', 60);
+          showOverlay('dead');
+        }
+
+        function showOverlay(kind) {
+          overlay.classList.remove('hidden');
+          if (kind === 'dead') {
+            overlayTitle.textContent = 'Game Over';
+            overlayTitle.classList.add('dead');
+            overlaySub.textContent = 'Du hast dich selbst gefressen.';
+            finalEl.style.display = 'block';
+            const isRecord = score >= best && score > 0;
+            finalEl.textContent = isRecord ? `Neuer Rekord: ${score}` : `Score: ${score} · Best: ${best}`;
+            finalEl.classList.toggle('record', isRecord);
+          } else if (kind === 'pause') {
+            overlayTitle.textContent = 'Pause';
+            overlayTitle.classList.remove('dead');
+            overlaySub.textContent = 'Atme durch.';
+            finalEl.style.display = 'none';
+          } else {
+            overlayTitle.textContent = 'Neon Snake';
+            overlayTitle.classList.remove('dead');
+            overlaySub.textContent = 'Iss die pinken Punkte. Lauf nicht in dich selbst.';
+            finalEl.style.display = 'none';
+          }
+        }
+
+        function hideOverlay() { overlay.classList.add('hidden'); }
+
+        // --- rendering ---------------------------------------------------
+        function drawGrid() {
+          ctx.fillStyle = '#05070d';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.strokeStyle = 'rgba(94, 243, 140, 0.05)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i <= COLS; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * SIZE, 0); ctx.lineTo(i * SIZE, canvas.height); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, i * SIZE); ctx.lineTo(canvas.width, i * SIZE); ctx.stroke();
+          }
+        }
+
+        function drawCell(x, y, color, glow, scale = 1) {
+          const cx = x * SIZE + SIZE / 2;
+          const cy = y * SIZE + SIZE / 2;
+          const s = SIZE * 0.82 * scale;
+          ctx.shadowColor = glow;
+          ctx.shadowBlur = 18;
+          ctx.fillStyle = color;
+          ctx.fillRect(cx - s / 2, cy - s / 2, s, s);
+          ctx.shadowBlur = 0;
+        }
+
+        function drawFood(t) {
+          const pulse = 0.85 + Math.sin(t / 200) * 0.15;
+          const cx = food.x * SIZE + SIZE / 2;
+          const cy = food.y * SIZE + SIZE / 2;
+          ctx.shadowColor = '#ff3d8a';
+          ctx.shadowBlur = 24;
+          ctx.fillStyle = '#ff3d8a';
+          ctx.beginPath();
+          ctx.arc(cx, cy, (SIZE * 0.4) * pulse, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        function drawSnake() {
+          for (let i = snake.length - 1; i >= 0; i--) {
+            const s = snake[i];
+            const t = 1 - i / snake.length;
+            const c = `rgba(94, 243, 140, ${0.4 + t * 0.6})`;
+            drawCell(s.x, s.y, c, '#5ef38c', 0.85 + t * 0.15);
+          }
+          // eyes on head
+          const h = snake[0];
+          const cx = h.x * SIZE + SIZE / 2;
+          const cy = h.y * SIZE + SIZE / 2;
+          ctx.fillStyle = '#05070d';
+          const ex = dir.x * SIZE * 0.18, ey = dir.y * SIZE * 0.18;
+          const ox = -dir.y * SIZE * 0.18, oy = dir.x * SIZE * 0.18;
+          ctx.beginPath(); ctx.arc(cx + ex + ox, cy + ey + oy, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx + ex - ox, cy + ey - oy, 2, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawParticles(dt) {
+          for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.94; p.vy *= 0.94;
+            p.life -= dt / 600;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+          }
+          ctx.globalAlpha = 1;
+          ctx.shadowBlur = 0;
+        }
+
+        let acc = 0, prev = performance.now();
+        function frame(now) {
+          const dt = now - prev;
+          prev = now;
+          if (state === STATE.PLAYING) {
+            acc += dt;
+            while (acc >= tickMs) { tick(); acc -= tickMs; }
+          }
+          drawGrid();
+          drawFood(now);
+          if (snake) drawSnake();
+          drawParticles(dt);
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+
+        // --- input -------------------------------------------------------
+        function setDir(x, y) {
+          if (snake && (x === -dir.x && y === -dir.y) && snake.length > 1) return;
+          nextDir = { x, y };
+        }
+
+        function startGame() {
+          if (state === STATE.PLAYING) return;
+          if (state === STATE.MENU || state === STATE.DEAD) reset();
+          state = STATE.PLAYING;
+          hideOverlay();
+        }
+
+        function togglePause() {
+          if (state === STATE.PLAYING) { state = STATE.PAUSED; showOverlay('pause'); }
+          else if (state === STATE.PAUSED) { state = STATE.PLAYING; hideOverlay(); }
+        }
+
+        window.addEventListener('keydown', (e) => {
+          const k = e.key.toLowerCase();
+          if (k === 'arrowup' || k === 'w') { setDir(0, -1); e.preventDefault(); }
+          else if (k === 'arrowdown' || k === 's') { setDir(0, 1); e.preventDefault(); }
+          else if (k === 'arrowleft' || k === 'a') { setDir(-1, 0); e.preventDefault(); }
+          else if (k === 'arrowright' || k === 'd') { setDir(1, 0); e.preventDefault(); }
+          else if (k === ' ') { togglePause(); e.preventDefault(); return; }
+          else if (k === 'r') { state = STATE.MENU; showOverlay('menu'); reset(); return; }
+          if (state !== STATE.PLAYING) startGame();
+        });
+
+        // touch / swipe
+        let touchStart = null;
+        canvas.addEventListener('touchstart', (e) => {
+          const t = e.touches[0];
+          touchStart = { x: t.clientX, y: t.clientY };
+          if (state !== STATE.PLAYING) startGame();
+        }, { passive: true });
+        canvas.addEventListener('touchmove', (e) => {
+          if (!touchStart) return;
+          const t = e.touches[0];
+          const dx = t.clientX - touchStart.x;
+          const dy = t.clientY - touchStart.y;
+          if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
+          if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 1 : -1, 0);
+          else setDir(0, dy > 0 ? 1 : -1);
+          touchStart = { x: t.clientX, y: t.clientY };
+        }, { passive: true });
+
+        overlay.addEventListener('click', () => { if (state !== STATE.PLAYING) startGame(); });
+
+        reset();
+        showOverlay('menu');
+      })();
+    </script>
   </body>
 </html>
