@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JIT-Elevation – Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Just-in-Time-Privilege-Elevation</h1>
+    <div id="userbar">
+      <span id="whoami">nicht angemeldet</span>
+      <button id="logout" class="hidden">Abmelden</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Anmeldung -->
+    <section id="login-card" class="card">
+      <h2>Anmelden</h2>
+      <p class="hint">Demo-Benutzer: <code>alice</code> (darf bis <code>admin</code>)
+        oder <code>bob</code> (nur bis <code>viewer</code>).</p>
+      <div class="row">
+        <input id="username" placeholder="alice" autocomplete="off">
+        <button id="login">Anmelden</button>
+      </div>
+    </section>
+
+    <!-- Eingeloggter Bereich -->
+    <div id="app" class="hidden">
+
+      <section class="card">
+        <h2>1 · Zweitfaktor einrichten</h2>
+        <p class="hint">Einmalig: Secret in einer Authenticator-App
+          (Google Authenticator, Authy …) hinterlegen.</p>
+        <button id="setup">Einrichtungsdaten anzeigen</button>
+        <div id="totp-setup" class="hidden">
+          <div id="qrcode"></div>
+          <p>Secret (manuelle Eingabe): <code id="secret"></code></p>
+          <p class="mono small" id="otpauth"></p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2 · Erhöhung beantragen</h2>
+        <div class="row">
+          <label>Rolle
+            <select id="role">
+              <option value="admin">admin</option>
+              <option value="editor">editor</option>
+              <option value="viewer">viewer</option>
+            </select>
+          </label>
+          <label>Dauer (min)
+            <input id="duration" type="number" value="30" min="1" style="width:5rem">
+          </label>
+        </div>
+        <input id="reason" placeholder="Begründung (z. B. Incident-Response)">
+        <button id="request">Beantragen</button>
+      </section>
+
+      <section class="card">
+        <h2>3 · Bestätigen (Step-Up)</h2>
+        <p class="hint">Aktuellen 6-stelligen Code aus der Authenticator-App
+          eingeben.</p>
+        <div class="row">
+          <input id="code" placeholder="123456" inputmode="numeric"
+                 autocomplete="off" maxlength="6">
+          <button id="confirm">Bestätigen</button>
+        </div>
+        <p class="small">Offener Antrag: <code id="pending-id">–</code></p>
+      </section>
+
+      <section class="card">
+        <h2>Geschützte Admin-Aktion</h2>
+        <p class="hint">Der Server prüft serverseitig (<code>Check</code>), ob ein
+          aktiver Admin-Grant vorliegt – fail-closed.</p>
+        <button id="admin">Geschützte Daten abrufen</button>
+        <pre id="admin-result" class="hidden"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Status der Anträge</h2>
+        <button id="refresh">Aktualisieren</button>
+        <table id="grants">
+          <thead><tr><th>Rolle</th><th>Zustand</th><th>Rest</th><th>Grund</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+  </main>
+
+  <!-- QR-Code optional; ohne Internet wird nur das Secret als Text gezeigt -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
