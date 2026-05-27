@@ -17,9 +17,10 @@ RUN mkdir -p /app/data && chown -R app:app /app
 USER app
 
 # Persistenz liegt im Volume /app/data; static/ wird relativ zum WORKDIR bedient.
+# Port 8090, weil der harbor-edge-proxy diesen Upstream erwartet.
 ENV JIT_STATE_FILE=/app/data/state.json \
     JIT_AUDIT_FILE=/app/data/audit.log \
-    JIT_ADDR=:8080
+    JIT_ADDR=:8090
 
-EXPOSE 8080
+EXPOSE 8090
 CMD ["/app/demo"]
