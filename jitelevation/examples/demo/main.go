@@ -14,12 +14,22 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	jit "github.com/drluggels/jitelevation"
 	"github.com/drluggels/jitelevation/adapter/filestore"
 	"github.com/drluggels/jitelevation/adapter/totp"
 )
+
+// envOr liefert die Umgebungsvariable key oder fallback, falls sie leer ist.
+// So lassen sich Pfade und Adresse im Container ueber das Environment setzen.
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
 
 const demoScope = "demo"
 
@@ -30,12 +40,12 @@ type server struct {
 }
 
 func main() {
-	store, err := filestore.Open("demo-state.json")
+	store, err := filestore.Open(envOr("JIT_STATE_FILE", "demo-state.json"))
 	if err != nil {
 		log.Fatalf("Store oeffnen: %v", err)
 	}
 	seeds := newDemoSeeds()
-	audit, err := newFileAudit("demo-audit.log")
+	audit, err := newFileAudit(envOr("JIT_AUDIT_FILE", "demo-audit.log"))
 	if err != nil {
 		log.Fatalf("Audit oeffnen: %v", err)
 	}
@@ -64,8 +74,9 @@ func main() {
 		}
 	}()
 
-	log.Println("JIT-Demo laeuft auf http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", srv.routes()))
+	addr := envOr("JIT_ADDR", ":8080")
+	log.Printf("JIT-Demo laeuft auf %s", addr)
+	log.Fatal(http.ListenAndServe(addr, srv.routes()))
 }
 
 // routes registriert alle HTTP-Endpunkte. Ausgelagert, damit der Flow im Test
