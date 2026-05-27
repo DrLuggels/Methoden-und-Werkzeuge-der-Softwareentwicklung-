@@ -1,4 +1,21 @@
+# Versionierung
 .git
 .gitignore
-README.md
-compose.yaml
+
+# LaTeX-Studienarbeit + Build-Artefakte (nicht Teil des deploybaren Dienstes)
+*.pdf
+*.tex
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.toc
+*.out
+figures/
+threat-model.md
+uebersicht.md
+
+# Laufzeit-Dateien der Demo
+**/demo-state.json
+**/demo-state.json.tmp
+**/demo-audit.log
