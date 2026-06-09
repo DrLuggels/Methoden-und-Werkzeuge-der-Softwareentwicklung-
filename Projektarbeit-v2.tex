@@ -95,7 +95,7 @@
 
 Administrative Berechtigungen werden in vielen Systemen dauerhaft vergeben:
 Ein Konto besitzt erhöhte Rechte unabhängig davon, ob diese im Moment benötigt
-werden. Das widerspricht dem Least-Privilege-Prinzip~\cite{saltzer}, vergrößert
+werden. Das widerspricht dem Least-Privilege-Prinzip~\cite{owasp_polp}, vergrößert
 den Schaden einer Kontoübernahme, da ein kompromittiertes Administratorkonto jederzeit
 voll handlungsfähig ist, und erschwert die Nachvollziehbarkeit. Als Antwort hat
 sich \emph{Just-in-Time}-Zugriff (JIT) etabliert: Rechte werden nur für den
@@ -135,7 +135,7 @@ Teleport~\cite{teleport} und OIDC-Provider wie Keycloak~\cite{keycloak} eigene
 Infrastruktur bzw.\ hohen Betriebsaufwand voraussetzen, verfolgt das hier
 entwickelte Modul einen leichtgewichtigen Ansatz: Es führt die Erhöhung als
 eingebettete Bibliothek statt als externe Infrastruktur durch und bleibt durch
-das Ports-and-Adapters-Muster~\cite{cockburn} unabhängig vom Trägersystem.
+das Ports-and-Adapters-Muster~\cite{hexagonal} unabhängig vom Trägersystem.
 
 \begin{table}[htbp]
   \centering
@@ -197,7 +197,7 @@ bricht.
 %==============================================================================
 \section{Sicherheitsanalyse}
 
-Die Analyse folgt STRIDE~\cite{shostack} und ordnet jeder Bedrohung eine
+Die Analyse folgt STRIDE~\cite{msstride} und ordnet jeder Bedrohung eine
 konkrete Gegenmaßnahme im Entwurf bzw.\ im Code zu. Annahmen: Der Host authentifiziert die
 Primäridentität, TLS sichert die Transportwege (Browser/Backend und
 Backend/Datenbank), und der TOTP-Seed liegt verschlüsselt im Secret-Store und
@@ -371,51 +371,65 @@ Ausnahme. Offen bleiben Erweiterungen wie befristetes \texttt{sudo},
 phishing-resistente Faktoren (WebAuthn/FIDO2) und ein MariaDB-Adapter.
 
 %==============================================================================
+\clearpage
 \renewcommand{\refname}{Literaturverzeichnis}
 \begin{thebibliography}{99}
-\setlength{\itemsep}{2pt}
+\setlength{\itemsep}{3pt}
 
-\bibitem{saltzer} J.~H. Saltzer und M.~D. Schroeder, ``The Protection of
-Information in Computer Systems,'' \emph{Proceedings of the IEEE}, Bd.~63,
-Nr.~9, S.~1278--1308, 1975.
+\bibitem{owasp_polp} OWASP Foundation, ``Least Privilege Principle,'' OWASP
+Community. [Online]. Verfügbar:
+\url{https://owasp.org/www-community/controls/Least_Privilege_Principle}
+(abgerufen am 8.\,Juni 2026).
 
-\bibitem{vault} HashiCorp, ``Vault SSH Secrets Engine,'' HashiCorp
+\bibitem{vault} HashiCorp, ``Vault -- SSH Secrets Engine,'' Vault
 Documentation. [Online]. Verfügbar:
-\texttt{https://developer.hashicorp.com/vault/docs/secrets/ssh}
+\url{https://developer.hashicorp.com/vault/docs/secrets/ssh}
+(abgerufen am 8.\,Juni 2026).
 
-\bibitem{boundary} HashiCorp, ``Boundary,'' Produktdokumentation. [Online].
-Verfügbar: \texttt{https://www.boundaryproject.io}
+\bibitem{boundary} HashiCorp, ``Boundary Documentation.'' [Online]. Verfügbar:
+\url{https://developer.hashicorp.com/boundary} (abgerufen am 8.\,Juni 2026).
 
-\bibitem{teleport} Teleport, ``Teleport Access Platform,''
-Produktdokumentation. [Online]. Verfügbar: \texttt{https://goteleport.com}
+\bibitem{teleport} Teleport, ``Teleport Documentation.'' [Online]. Verfügbar:
+\url{https://goteleport.com/docs/} (abgerufen am 8.\,Juni 2026).
 
-\bibitem{keycloak} Red Hat, ``Keycloak -- Open Source Identity and Access
-Management,'' Produktdokumentation. [Online]. Verfügbar:
-\texttt{https://www.keycloak.org}
+\bibitem{keycloak} Keycloak, ``Keycloak Documentation.'' [Online]. Verfügbar:
+\url{https://www.keycloak.org/documentation} (abgerufen am 8.\,Juni 2026).
 
-\bibitem{cockburn} A.~Cockburn, ``Hexagonal Architecture (Ports and
-Adapters),'' 2005. [Online]. Verfügbar:
-\texttt{https://alistair.cockburn.us/hexagonal-architecture/}
+\bibitem{hexagonal} ``Hexagonale Architektur,'' Wikipedia, die freie
+Enzyklopädie. [Online]. Verfügbar:
+\url{https://de.wikipedia.org/wiki/Hexagonale_Architektur}
+(abgerufen am 8.\,Juni 2026).
 
-\bibitem{fips180} National Institute of Standards and Technology, ``Secure Hash
-Standard (SHS),'' FIPS PUB 180-4, 2015.
+\bibitem{fips180} National Institute of Standards and Technology, ``FIPS 180-4:
+Secure Hash Standard (SHS),'' NIST CSRC. [Online]. Verfügbar:
+\url{https://csrc.nist.gov/pubs/fips/180-4/upd1/final}
+(abgerufen am 8.\,Juni 2026).
 
-\bibitem{shostack} A.~Shostack, \emph{Threat Modeling: Designing for Security}.
-Indianapolis, IN: Wiley, 2014.
+\bibitem{msstride} Microsoft, ``Threats -- Microsoft Threat Modeling Tool
+(STRIDE),'' Microsoft Learn. [Online]. Verfügbar:
+\url{https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats}
+(abgerufen am 8.\,Juni 2026).
 
-\bibitem{nistgcm} M.~Dworkin, ``Recommendation for Block Cipher Modes of
-Operation: Galois/Counter Mode (GCM) and GMAC,'' NIST Special Publication
-800-38D, 2007.
+\bibitem{nistgcm} National Institute of Standards and Technology, ``SP 800-38D:
+Galois/Counter Mode (GCM) and GMAC,'' NIST CSRC. [Online]. Verfügbar:
+\url{https://csrc.nist.gov/pubs/sp/800/38/d/final} (abgerufen am 8.\,Juni 2026).
 
-\bibitem{rfc6238} D.~M'Raihi, S.~Machani, M.~Pei und J.~Rydell, ``TOTP:
-Time-Based One-Time Password Algorithm,'' RFC~6238, IETF, 2011.
+\bibitem{rfc6238} Internet Engineering Task Force, ``RFC 6238: TOTP --
+Time-Based One-Time Password Algorithm.'' [Online]. Verfügbar:
+\url{https://www.rfc-editor.org/rfc/rfc6238} (abgerufen am 8.\,Juni 2026).
 
-\bibitem{rfc4226} D.~M'Raihi, M.~Bellare, F.~Hoornaert, D.~Naccache und
-O.~Ranen, ``HOTP: An HMAC-Based One-Time Password Algorithm,'' RFC~4226, IETF,
-2005.
+\bibitem{rfc4226} Internet Engineering Task Force, ``RFC 4226: HOTP -- An
+HMAC-Based One-Time Password Algorithm.'' [Online]. Verfügbar:
+\url{https://www.rfc-editor.org/rfc/rfc4226} (abgerufen am 8.\,Juni 2026).
 
 \bibitem{webauthn} World Wide Web Consortium (W3C), ``Web Authentication: An API
-for Accessing Public Key Credentials Level~2,'' W3C Recommendation, 2021.
+for Accessing Public Key Credentials Level~2,'' W3C Recommendation. [Online].
+Verfügbar: \url{https://www.w3.org/TR/webauthn-2/} (abgerufen am 8.\,Juni 2026).
+
+\bibitem{claude} Anthropic, ``Claude Code (Sprachmodell Claude Opus~4.8),''
+KI-Assistent, unterstützend eingesetzt bei Konzeption, Implementierung und
+Ausarbeitung. [Online]. Verfügbar: \url{https://www.anthropic.com/claude-code}
+(verwendet im Juni 2026).
 
 \end{thebibliography}
 

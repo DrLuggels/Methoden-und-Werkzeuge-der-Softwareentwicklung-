@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1781005489.07896 "Projektarbeit-v2.tex" "Projektarbeit-v2.pdf" "Projektarbeit-v2" 1781005489.62487 2
+["pdflatex"] 1781006662.16479 "Projektarbeit-v2.tex" "Projektarbeit-v2.pdf" "Projektarbeit-v2" 1781006662.73793 2
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/ecrm1095.tfm" 1775415801 3584 929cdff2b7a8c11bd4d49fd68cb0ae70 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmr10.tfm" 1775415801 1296 45809c5a464d5f32c8f98ba97c1bb47f ""
@@ -64,8 +64,8 @@
   "/usr/share/texmf-dist/tex/latex/xcolor/xcolor.sty" 1775415801 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1780904729 3084555 f989c726a133c842c896af0de24e0bbf ""
-  "Projektarbeit-v2.aux" 1781005489.5891 104 5a72887fb73856b518f793864d670542 "pdflatex"
-  "Projektarbeit-v2.tex" 1781005469.15507 20597 7f4f8e062754099fb9551646f2be0289 ""
+  "Projektarbeit-v2.aux" 1781006662.68163 104 5a72887fb73856b518f793864d670542 "pdflatex"
+  "Projektarbeit-v2.tex" 1781006639.92578 21513 a99b7839a9021ee41a7c35e6907424d9 ""
   (generated)
   "Projektarbeit-v2.aux"
   "Projektarbeit-v2.log"
