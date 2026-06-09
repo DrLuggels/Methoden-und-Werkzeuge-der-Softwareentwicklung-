@@ -1,8 +1,8 @@
 PWD /home/luggels/Documents/Projekte/Methoden-und-Werkzeuge-der-Softwareentwicklung-
 INPUT /usr/share/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT Projektarbeit.tex
-OUTPUT Projektarbeit.log
+INPUT Projektarbeit-v2.tex
+OUTPUT Projektarbeit-v2.log
 INPUT /usr/share/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texmf-dist/tex/latex/base/size11.clo
@@ -85,17 +85,6 @@ INPUT /usr/share/texmf-dist/tex/latex/graphics-cfg/color.cfg
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /usr/share/texmf-dist/tex/latex/graphics/mathcolor.ltx
-INPUT /usr/share/texmf-dist/tex/latex/listings/listings.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/listings.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstpatch.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstpatch.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstpatch.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstmisc.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstmisc.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/lstmisc.sty
-INPUT /usr/share/texmf-dist/tex/latex/listings/listings.cfg
-INPUT /usr/share/texmf-dist/tex/latex/listings/listings.cfg
-INPUT /usr/share/texmf-dist/tex/latex/listings/listings.cfg
 INPUT /usr/share/texmf-dist/tex/latex/hyperref/hyperref.sty
 INPUT /usr/share/texmf-dist/tex/latex/hyperref/hyperref.sty
 INPUT /usr/share/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
@@ -143,7 +132,4 @@ INPUT /usr/share/texmf-dist/tex/latex/lm/t1lmr.fd
 INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmr10.tfm
 INPUT /usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
-INPUT ./Projektarbeit.aux
-INPUT ./Projektarbeit.aux
-INPUT Projektarbeit.aux
-OUTPUT Projektarbeit.aux
+OUTPUT Projektarbeit-v2.aux

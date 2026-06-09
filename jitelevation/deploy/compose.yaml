@@ -1,0 +1,88 @@
+# Drei-Stack-Demo der JIT-Privilege-Elevation-Topologie.
+#
+#   jitpe   – zentraler Elevation-Dienst (Modul + Frontend + /api/verify)
+#   prod    – Ziel-Anwendung mit eigenem Stack (Frontend + Backend + DB)
+#   dev     – zweite Ziel-Anwendung mit eigenem Stack
+#
+# Netz-Isolation bildet die VM-Trennung des Tafelbilds nach: prod und dev liegen
+# in getrennten Netzen und koennen sich NICHT direkt sehen. Beide erreichen nur
+# den JITPE-Dienst (im gemeinsamen jit-net). Damit ist der einzige Pfad zu
+# erhoehten Rechten der zentrale Dienst.
+#
+# Start:  docker compose -f deploy/compose.yaml up --build
+#   JITPE-Dienst   -> http://localhost:9090
+#   prod-App       -> http://localhost:9081
+#   dev-App        -> http://localhost:9082
+
+networks:
+  jit-net:        # gemeinsam: jitpe + prod-backend + dev-backend
+  prod-net:       # nur prod-intern (backend <-> db)
+  dev-net:        # nur dev-intern (backend <-> db)
+
+volumes:
+  jitpe-data:
+  prod-db-data:
+  dev-db-data:
+
+services:
+  # --- JITPE-Stack ----------------------------------------------------------
+  jitpe:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.jitpe
+    image: jitpe
+    ports:
+      - "9090:8090"
+    volumes:
+      - jitpe-data:/data
+    networks: [jit-net]
+    restart: unless-stopped
+
+  # --- prod-Stack -----------------------------------------------------------
+  prod-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: prod
+      POSTGRES_DB: prod
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    networks: [prod-net]
+    restart: unless-stopped
+
+  prod-backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.appbackend
+    image: appbackend
+    environment:
+      APP_SCOPE: prod
+      JITPE_URL: http://jitpe:8090
+      DB_ADDR: prod-db:5432
+    ports:
+      - "9081:8080"
+    networks: [jit-net, prod-net]   # erreicht JITPE und die eigene DB
+    depends_on: [prod-db, jitpe]
+    restart: unless-stopped
+
+  # --- dev-Stack ------------------------------------------------------------
+  dev-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: dev
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    networks: [dev-net]
+    restart: unless-stopped
+
+  dev-backend:
+    image: appbackend
+    environment:
+      APP_SCOPE: dev
+      JITPE_URL: http://jitpe:8090
+      DB_ADDR: dev-db:5432
+    ports:
+      - "9082:8080"
+    networks: [jit-net, dev-net]
+    depends_on: [dev-db, jitpe, prod-backend]
+    restart: unless-stopped

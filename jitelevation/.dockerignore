@@ -1,0 +1,7 @@
+# Laufzeit-Artefakte der Demos nicht in den Build-Kontext aufnehmen
+**/demo-state.json
+**/demo-state.json.tmp
+**/demo-audit.log
+**/state.json
+**/audit.log
+**/*.tmp

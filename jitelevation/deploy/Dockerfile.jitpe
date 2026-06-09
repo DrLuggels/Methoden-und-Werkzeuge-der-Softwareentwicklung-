@@ -1,0 +1,17 @@
+# JITPE-Dienst: baut das Go-Binary aus dem jitelevation-Modul.
+# Build-Kontext ist das Modul-Wurzelverzeichnis (jitelevation/).
+FROM golang:1.23-alpine AS build
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -o /out/jitpe ./deploy/jitpe
+
+FROM alpine:3.20
+RUN addgroup -S app && adduser -S app -G app
+WORKDIR /app
+COPY --from=build /out/jitpe /app/jitpe
+COPY deploy/jitpe/web/ /app/web/
+RUN mkdir -p /data && chown -R app:app /app /data
+USER app
+ENV JIT_ADDR=:8090 JIT_STATE_FILE=/data/state.json JIT_AUDIT_FILE=/data/audit.log
+EXPOSE 8090
+CMD ["/app/jitpe"]

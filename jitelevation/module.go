@@ -249,6 +249,25 @@ func (m *Module) Check(ctx context.Context, user UserID, scope, requiredRole str
 	return false, nil
 }
 
+// Cancel nimmt einen noch nicht bestaetigten (pending) Antrag auf Wunsch des
+// Benutzers zurueck. Der Store laesst den Uebergang nur fuer pending-Grants zu
+// (sonst ErrInvalidState); eine bereits aktive Erhoehung wird ueber Revoke
+// widerrufen.
+func (m *Module) Cancel(ctx context.Context, id GrantID, by UserID) error {
+	now := m.clock.Now()
+	if err := m.store.DenyGrant(ctx, id, now); err != nil {
+		return err
+	}
+	m.auditBestEffort(ctx, AuditEvent{
+		GrantID:    id,
+		Event:      EventDenied,
+		Actor:      by,
+		OccurredAt: now,
+		Details:    map[string]string{"grund": "abgebrochen"},
+	})
+	return nil
+}
+
 // Revoke nimmt eine aktive Erhoehung vorzeitig zurueck.
 func (m *Module) Revoke(ctx context.Context, id GrantID, by UserID) error {
 	now := m.clock.Now()

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ziel-Anwendung</title>
+  <style>
+    :root { --accent:#0b5394; --ok:#1a7f37; --err:#b00020; --line:#e1e5ea; --muted:#6a737d; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, sans-serif; background:#f4f6f8; color:#1c2733; line-height:1.5; }
+    header { color:#fff; padding:1rem 1.5rem; }
+    header.prod { background:#7a1f2b; } header.dev { background:#1f5c7a; }
+    header h1 { margin:0; font-size:1.15rem; }
+    main { max-width:680px; margin:1.5rem auto; padding:0 1rem; display:grid; gap:1rem; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:1rem 1.25rem; }
+    .card h2 { font-size:1rem; margin:0 0 .5rem; }
+    .hint { color:var(--muted); font-size:.85rem; }
+    .row { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+    input, button { font:inherit; padding:.45rem .6rem; border-radius:6px; border:1px solid var(--line); }
+    button { background:var(--accent); color:#fff; border:none; cursor:pointer; }
+    button:hover { filter:brightness(1.08); }
+    pre { background:#f6f8fa; border:1px solid var(--line); border-radius:6px; padding:.75rem; overflow-x:auto; font-size:.85rem; }
+    pre.ok { border-color:#b6e3c2; } pre.err { border-color:#f0b8c0; color:var(--err); }
+    code { font-family: ui-monospace, Menlo, monospace; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header id="hdr"><h1 id="title">Ziel-Anwendung</h1></header>
+  <main>
+    <section class="card">
+      <h2>Status</h2>
+      <pre id="info">lade…</pre>
+    </section>
+
+    <section class="card">
+      <h2>Privilegierte Aktion</h2>
+      <p class="hint">Wird nur ausgeführt, wenn JITPE für diesen Benutzer eine aktive
+        Admin-Erhöhung im Scope dieser App bestätigt. Sonst <code>403</code> (fail-closed).</p>
+      <div class="row">
+        <label>Benutzer: <input id="user" value="alice" style="width:8rem"></label>
+        <button id="run">Admin-Aktion ausführen</button>
+      </div>
+      <pre id="result" style="display:none"></pre>
+      <p class="hint">Erhöhung holst du im
+        <a href="http://localhost:9090" target="_blank">JITPE-Dienst</a> (Scope passend wählen).</p>
+    </section>
+  </main>
+
+  <script>
+    async function loadInfo() {
+      const r = await fetch("/api/info");
+      const d = await r.json();
+      document.getElementById("info").textContent = JSON.stringify(d, null, 2);
+      const t = "Ziel-Anwendung · " + (d.scope || "?").toUpperCase();
+      document.getElementById("title").textContent = t;
+      document.getElementById("hdr").className = d.scope || "";
+      document.title = t;
+    }
+    document.getElementById("run").onclick = async () => {
+      const user = document.getElementById("user").value.trim();
+      const r = await fetch("/api/admin/action", { method: "POST", headers: { "X-User": user } });
+      const d = await r.json();
+      const out = document.getElementById("result");
+      out.style.display = "block";
+      out.className = r.ok ? "ok" : "err";
+      out.textContent = r.status + " " + (r.ok ? "OK\n" + JSON.stringify(d, null, 2) : "– " + (d.error || ""));
+    };
+    loadInfo();
+  </script>
+</body>
+</html>
