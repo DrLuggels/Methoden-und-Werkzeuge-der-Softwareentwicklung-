@@ -1,0 +1,13 @@
+# scikit-learn 1.9.0: Version, mit der Schuteras digit_classifier_v1.pkl
+# erzeugt wurde (aeltere Versionen scheitern an entferntem multi_class-Attribut).
+scikit-learn==1.9.0
+numpy
+joblib
+python-dotenv==1.0.1
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+slowapi==0.1.9
+pydantic==2.7.1
+SQLAlchemy==2.0.30
+psycopg2-binary==2.9.9
+pytest==8.2.0
