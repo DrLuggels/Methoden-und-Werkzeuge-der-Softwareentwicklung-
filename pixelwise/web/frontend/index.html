@@ -1,29 +1,23 @@
-<!DOCTYPE html>
-<html lang="de">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PixelWise – Ziffernerkennung</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+    <title>PixelWise</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header><h1>PixelWise</h1><p>Zeichne eine Ziffer (1–9)</p></header>
-  <main>
-    <section class="pad-area">
-      <canvas id="pad" width="280" height="280"></canvas>
-      <div class="buttons">
-        <button id="classify">Erkennen</button>
-        <button id="clear" class="secondary">Löschen</button>
-      </div>
-      <div id="result" class="result"></div>
-    </section>
-
-    <section class="history-area">
-      <h2>Letzte Vorhersagen</h2>
-      <button id="refresh" class="secondary small">Aktualisieren</button>
-      <ul id="history"></ul>
-    </section>
-  </main>
-  <script src="app.js"></script>
+    <h1>PixelWise</h1>
+    <p>Draw a digit, then click Classify.</p>
+    <canvas id="pad" width="280" height="280"></canvas>
+    <div class="controls">
+        <button id="classify">Classify</button>
+        <button id="clear">Clear</button>
+    </div>
+    <div id="result"></div>
+    <h2>Recent predictions</h2>
+    <ul id="history"></ul>
+    <script src="app.js"></script>
 </body>
 </html>

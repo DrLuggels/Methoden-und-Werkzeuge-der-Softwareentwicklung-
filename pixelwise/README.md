@@ -1,8 +1,11 @@
 # PixelWise – Full-Stack-Ziffernerkennung (docker-compose)
 
 Umsetzung des Skripts **„Full Stack Handwerk"** (MNIST-Handschrift­erkennung)
-als container­isierter Full-Stack. Der Kurs baut die Anwendung auf zwei VMs mit
-systemd + nginx; hier ist sie 1:1 in einen `docker compose`-Stack übersetzt.
+als container­isierter Full-Stack. Verwendet wird der **Original-Code aus
+`github.com/schutera/pixelwise`** (Backend `app/`, Frontend, Tests) sowie das
+vortrainierte Modell aus `github.com/schutera/pixelwise-model` (v1.0). Der Kurs
+baut die Anwendung auf zwei VMs mit systemd + nginx; hier ist sie in einen
+`docker compose`-Stack verpackt.
 
 ## Architektur
 
@@ -19,9 +22,10 @@ Browser ──▶ web (nginx)  ──/──▶  statisches Frontend (Canvas, Va
 | `backend` | FastAPI, scikit-learn, SQLAlchemy | `/classify`, `/results`, `/health` |
 | `db` | PostgreSQL 16 | Persistenz der Vorhersagen |
 
-Das ML-Modell wird **beim Image-Build selbst trainiert** (`train_model.py`,
-MNIST via OpenML, LogisticRegression, Ziffern 1–9). Bewusst **kein** fremdes
-Pickle wird geladen – das vermeidet unsichere Deserialisierung.
+Das ML-Modell ist Schuteras vortrainiertes `digit_classifier_v1.pkl` (Ziffern
+1–9). Es wurde mit **scikit-learn 1.8** erzeugt; ältere Versionen scheitern beim
+Laden am entfernten `multi_class`-Attribut, daher ist 1.8.0 in `requirements.txt`
+gepinnt (entspricht Schuteras eigener `requirements.txt`).
 
 ## Starten
 
@@ -73,8 +77,9 @@ unter `jitelevation/deploy/`.
 - **Docker statt VM/systemd**: Der Kurs nutzt zwei VirtualBox-VMs; hier drei
   Container. nginx-Upstream zeigt auf den Service-Namen `backend` statt
   `127.0.0.1`.
-- **PostgreSQL** als DB (der lauffähige Kurscode nutzt Postgres; SQLite wird im
-  Skript nur konzeptionell erklärt). DB-Host kommt aus `DB_HOST`.
-- **Modell selbst trainiert** statt aus fremdem Repo geladen.
+- **PostgreSQL** als DB; in `app/models.py` wurde nur der DB-Host von
+  hartcodiert `localhost` auf die Env-Variable `DB_HOST` (Compose-Service `db`)
+  geändert -- sonst unveränderter Schutera-Code.
+- **Modell** aus `schutera/pixelwise-model` (v1.0), benötigt scikit-learn 1.8.
 - **API-Key-Injektion** ins Frontend per Container-Start-Skript (ersetzt den
-  `sed`-Schritt des Kurs-Deploys).
+  `sed`-Schritt aus Schuteras `setup-server.sh`).

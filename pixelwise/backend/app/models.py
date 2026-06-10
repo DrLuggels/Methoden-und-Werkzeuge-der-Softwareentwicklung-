@@ -1,20 +1,13 @@
-"""SQLAlchemy-Datenmodell und DB-Verbindung (Block 6 des Kursskripts).
-
-Anpassung fuer Container: Die Verbindungs-URL wird aus einzelnen
-Umgebungsvariablen gebaut (DB_HOST etc.), damit der DB-Host der
-Compose-Service-Name (``db``) sein kann statt ``localhost``.
-"""
-import os
-from datetime import datetime
-
-from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, Float, Integer, String, create_engine
+from sqlalchemy import (Column, Integer, String,
+                        Float, DateTime, create_engine)
 from sqlalchemy.orm import declarative_base, sessionmaker
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
 load_dotenv()
 
 Base = declarative_base()
-
 
 class Prediction(Base):
     __tablename__ = "predictions"
@@ -22,17 +15,18 @@ class Prediction(Base):
     prediction = Column(String, nullable=False)
     confidence = Column(Float, nullable=False)
     model_version = Column(String, nullable=False)
-    client_ip = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime,
+                        default=datetime.utcnow)
 
-
+# Build the connection string in code from a single plain secret.
+# DB_PASSWORD is a literal value with no ${...}, so bash, python-dotenv,
+# and systemd's EnvironmentFile all read it identically. Interpolating
+# ${DB_PASSWORD} inside .env would break under systemd, which does not
+# expand variables in an EnvironmentFile.
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+# Container-Anpassung: DB-Host aus der Umgebung (Compose-Service "db");
+# Default bleibt "localhost", sodass das VM-Setup des Kurses unveraendert laeuft.
 DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "pixelwise")
-DB_NAME = os.getenv("DB_NAME", "pixelwise")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-
-DATABASE_URL = (
-    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-)
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+DATABASE_URL = f"postgresql://pixelwise:{DB_PASSWORD}@{DB_HOST}/pixelwise"
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)

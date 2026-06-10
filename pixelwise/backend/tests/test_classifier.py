@@ -1,16 +1,17 @@
-"""Smoke-Test des Klassifikators (Block 8 des Kursskripts)."""
+# tests/test_classifier.py
 import numpy as np
-
 from app.classifier import classify_batch
 
 
-def test_classify_batch_shape():
+def test_classify_batch_returns_one_per_image():
     images = np.zeros((2, 28, 28), dtype=np.uint8)
-    images[0, 10:18, 10:18] = 255
-    out = classify_batch(images)
-    assert len(out) == 2
-    for r in out:
-        assert "prediction" in r
-        assert "confidence" in r
-        assert 0.0 <= r["confidence"] <= 1.0
-        assert r["prediction"] in [str(d) for d in range(1, 10)]
+    results = classify_batch(images)
+    assert len(results) == 2
+
+
+def test_classify_batch_result_shape():
+    images = np.zeros((1, 28, 28), dtype=np.uint8)
+    result = classify_batch(images)[0]
+    assert "prediction" in result
+    assert "confidence" in result
+    assert isinstance(result["confidence"], float)
