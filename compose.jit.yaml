@@ -2,7 +2,9 @@
 # Start lokal:  docker compose up --build   ->  http://localhost:8080
 services:
   jit-demo:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.jitdemo
     image: jit-elevation-demo
     ports:
       - "8090:8090"
