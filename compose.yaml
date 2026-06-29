@@ -1,50 +1,23 @@
-# PixelWise – Full-Stack-Ziffernerkennung (MNIST), umgesetzt aus dem Skript
-# "Full Stack Handwerk" als docker-compose-Stack.
-#
-# Drei Dienste:
-#   db       – PostgreSQL (Persistenz der Vorhersagen)
-#   backend  – FastAPI + scikit-learn (Klassifikation), Modell beim Build trainiert
-#   web      – nginx serviert das Frontend und proxied /api/ zum Backend
-#
-# Diese Datei liegt bewusst im Repo-Wurzelverzeichnis, damit das
-# Harbor-Deploy-System sie automatisch findet und ausrollt.
-#
-# Start:  docker compose up --build   ->  http://localhost:8090
-# Der Web-Port ist fest 8090 (Upstream-Port, den der Harbor-Edge-Proxy erwartet).
-
+# Deploybarer Stack der JIT-Elevation-Demo (das Projekt der Studienarbeit).
+# Diese Datei liegt im Repo-Wurzelverzeichnis und ist der Hauptstack.
+# Start lokal:  docker compose up --build   ->  http://localhost:8090
+# Anderer Port: JIT_PORT=8096 docker compose up --build
 services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: pixelwise
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-pixelwise}
-      POSTGRES_DB: pixelwise
-    volumes:
-      - pixelwise-db:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  backend:
-    build: ./pixelwise/backend
-    image: pixelwise-backend
-    environment:
-      DB_HOST: db
-      DB_USER: pixelwise
-      DB_NAME: pixelwise
-      DB_PASSWORD: ${DB_PASSWORD:-pixelwise}
-      SECRET_API_KEY: ${SECRET_API_KEY:-pixelwise-demo-key}
-      MODEL_PATH: models/digit_classifier_v1.pkl
-    depends_on: [db]
-    restart: unless-stopped
-
-  web:
-    build: ./pixelwise/web
-    image: pixelwise-web
-    environment:
-      SECRET_API_KEY: ${SECRET_API_KEY:-pixelwise-demo-key}
+  jit-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.jitdemo
+    image: jit-elevation-demo
     ports:
-      - "${WEB_PORT:-8090}:80"
-    depends_on: [backend]
+      - "${JIT_PORT:-8090}:8090"
+    volumes:
+      - jit-data:/app/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8090/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
 volumes:
-  pixelwise-db:
+  jit-data:

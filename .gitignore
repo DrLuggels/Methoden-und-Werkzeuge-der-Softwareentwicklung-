@@ -1,0 +1,16 @@
+# LaTeX-Build-Artefakte (das fertige PDF wird bewusst eingecheckt)
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.toc
+*.out
+*.synctex.gz
+
+# Lokale Konfiguration
+.env
+
+# Laufzeit-Dateien der JIT-Demo
+**/demo-state.json
+**/demo-state.json.tmp
+**/demo-audit.log
