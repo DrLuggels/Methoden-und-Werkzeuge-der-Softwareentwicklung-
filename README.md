@@ -8,8 +8,8 @@ abgesicherte Rechte-Erhöhung als Bibliothek bereitstellt.
 | --- | --- | --- |
 | **Studienarbeit** | `Projektarbeit-v2.tex` / `Projektarbeit-v2.pdf` | Die ~10-seitige Arbeit |
 | **JIT-Go-Modul** | `jitelevation/` | Das Modul selbst (Kern + Adapter + Tests) |
-| **JIT-Demo (Hauptstack)** | `compose.yaml` + `Dockerfile.jitdemo` | Lauffähige Web-Demo des Moduls |
-| Sideproject PixelWise | `sideproject-pixelwise/` | MNIST-Ziffernerkennung (eigenes README dort) |
+| **JIT-Demo (Hauptstack)** | `compose.yaml` + `Dockerfile.jitdemo` | Einzel-Container-Web-Demo des Moduls |
+| **DEV/PROD-Drei-Stack** | `jitelevation/deploy/` | JITPE-Dienst + zwei geschützte Apps (Rechte sichtbar testen) |
 
 ---
 
@@ -89,16 +89,29 @@ Aufbau des Moduls: Kern (`module.go`, `ports.go`, `grant.go`, `audit.go`,
 
 ---
 
-## Sideproject: PixelWise
+## DEV/PROD-Drei-Stack: Rechte sichtbar testen
 
-Eigenständiges Nebenprojekt (MNIST-Ziffernerkennung als Full-Stack). Liegt
-vollständig unter [`sideproject-pixelwise/`](sideproject-pixelwise/) mit eigener
-`compose.yaml` und eigenem README:
+Bildet die Topologie der Studienarbeit nach: ein zentraler **JITPE-Dienst** und
+zwei geschützte Anwendungen (`prod`, `dev`) in getrennten Netzen. Jede App hat
+einen „Admin-Aktion"-Button, der zeigt, ob man aktuell Rechte hat.
 
 ```bash
-cd sideproject-pixelwise
-docker compose up --build -d   # -> http://localhost:8090 (ggf. WEB_PORT setzen)
+# aus dem Repo-Wurzelverzeichnis:
+docker compose -f jitelevation/deploy/compose.yaml up --build -d
 ```
+
+| Dienst | URL | Zweck |
+| --- | --- | --- |
+| JITPE-Dienst | http://localhost:9090 | hier anmelden, TOTP, Erhöhung beantragen |
+| prod-App | http://localhost:9081 | „Admin-Aktion" → 403 ohne / 200 mit Grant |
+| dev-App | http://localhost:9082 | dieselbe App, eigener Scope (Scope-Isolation) |
+
+**Vorführung:** prod-App öffnen → „Admin-Aktion" = **403**. Im JITPE-Dienst als
+`alice` anmelden, TOTP einrichten, Erhöhung für Scope `prod` beantragen +
+bestätigen. Zurück zur prod-App → **200**. Die dev-App bleibt **403** (Grant gilt
+nur für `prod`). Details + Drehbuch: [`jitelevation/deploy/README.md`](jitelevation/deploy/README.md).
+
+Stoppen: `docker compose -f jitelevation/deploy/compose.yaml down`.
 
 ---
 
