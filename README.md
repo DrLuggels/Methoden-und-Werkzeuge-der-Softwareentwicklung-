@@ -6,7 +6,7 @@ abgesicherte Rechte-Erhöhung als Bibliothek bereitstellt.
 
 | Was | Pfad | Beschreibung |
 | --- | --- | --- |
-| **Studienarbeit** | `Projektarbeit-v2.tex` / `Projektarbeit-v2.pdf` | Die ~10-seitige Arbeit |
+| **Studienarbeit** | `projektarbeit/` | Die schriftliche Arbeit (LaTeX + PDF, Notizen, Diagramme) |
 | **JIT-Go-Modul** | `jitelevation/` | Das Modul selbst (Kern + Adapter + Tests) |
 | **JIT-Demo (Hauptstack)** | `compose.yaml` + `Dockerfile.jitdemo` | Einzel-Container-Web-Demo des Moduls |
 | **DEV/PROD-Drei-Stack** | `jitelevation/deploy/` | JITPE-Dienst + zwei geschützte Apps (Rechte sichtbar testen) |
@@ -21,13 +21,6 @@ Ein einzelner Container (statisches Go-Binary + kleines Web-Frontend):
 # aus dem Repo-Wurzelverzeichnis (hier liegt compose.yaml):
 docker compose up --build -d
 # -> http://localhost:8090
-```
-
-Anderer Host-Port (falls 8090 belegt ist):
-
-```bash
-JIT_PORT=8096 docker compose up --build -d
-# -> http://localhost:8096
 ```
 
 ### Im Browser testen
@@ -118,11 +111,12 @@ Stoppen: `docker compose -f jitelevation/deploy/compose.yaml down`.
 ## Studienarbeit kompilieren
 
 ```bash
+cd projektarbeit
 latexmk -pdf Projektarbeit-v2.tex
 # oder zweimal: pdflatex Projektarbeit-v2.tex   (wegen Inhaltsverzeichnis)
 ```
 
-Ergebnis: `Projektarbeit-v2.pdf`.
+Ergebnis: `projektarbeit/Projektarbeit-v2.pdf`.
 
 ## Voraussetzungen
 

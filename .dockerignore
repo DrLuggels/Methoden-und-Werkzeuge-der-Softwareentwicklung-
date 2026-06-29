@@ -2,18 +2,8 @@
 .git
 .gitignore
 
-# LaTeX-Studienarbeit + Build-Artefakte (nicht Teil des deploybaren Dienstes)
-*.pdf
-*.tex
-*.aux
-*.log
-*.fls
-*.fdb_latexmk
-*.toc
-*.out
-figures/
-threat-model.md
-uebersicht.md
+# Studienarbeit (eigener Ordner, nicht Teil des deploybaren Dienstes)
+projektarbeit/
 
 # Laufzeit-Dateien der Demo
 **/demo-state.json
