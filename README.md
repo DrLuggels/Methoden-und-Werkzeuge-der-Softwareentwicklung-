@@ -112,11 +112,11 @@ Stoppen: `docker compose -f jitelevation/deploy/compose.yaml down`.
 
 ```bash
 cd projektarbeit
-latexmk -pdf Projektarbeit-v2.tex
-# oder zweimal: pdflatex Projektarbeit-v2.tex   (wegen Inhaltsverzeichnis)
+latexmk -pdf Projektarbeit.tex
+# oder zweimal: pdflatex Projektarbeit.tex   (wegen Inhaltsverzeichnis)
 ```
 
-Ergebnis: `projektarbeit/Projektarbeit-v2.pdf`.
+Ergebnis: `projektarbeit/Projektarbeit.pdf`.
 
 ## Voraussetzungen
 
