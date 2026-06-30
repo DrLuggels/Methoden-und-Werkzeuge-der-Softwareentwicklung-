@@ -295,8 +295,9 @@ Replay, abgelaufene Frist oder Store-Fehler, führt zu keinem aktiven Grant.
 Das Modul ist in Go geschrieben und besteht aus dem Kern (Domänentypen,
 State-Machine, die Schnittstellen in \texttt{ports.go}, die Hash-Kette in
 \texttt{audit.go}, eine Beispiel-Policy sowie die zentrale Logik in
-\texttt{module.go}) und zwei Adaptern: einem In-Memory-Store und einem
-TOTP-Verifier nach RFC~6238. Der Kern hat keine externen Abhängigkeiten.
+\texttt{module.go}) und drei Adaptern: einem In-Memory-Store, einem
+dateibasierten Store (JSON-Persistenz, atomar per Temp-Datei und Rename) und
+einem TOTP-Verifier nach RFC~6238. Der Kern hat keine externen Abhängigkeiten.
 
 \subsection{Die Schnittstellen (Ports)}
 Der Kern definiert fünf Schnittstellen, die das Host-System implementiert. Die
